@@ -253,7 +253,7 @@ class Sounding(UserDict):
 
     def plot_skewt(self, pmax=1050., pmin=100., parcel_type='most_unstable',
                    imagename=None, title=None, tmin=-40., tmax=30., fig=None,
-                   dpi=300, **kwargs):
+                   dpi=300, lower_title=None, **kwargs):
         """A wrapper for plotting the skewt diagram for a Sounding instance."""
 
         self.make_skewt_axes(pmax, pmin, tmin, tmax, fig)
@@ -268,6 +268,9 @@ class Sounding(UserDict):
         else:
             self.skewxaxis.set_title(
                 "%s %s" % (self["StationNumber"], self['SoundingDate']))
+        if lower_title is not None:
+            self.skewxaxis.text(0.5, -0.11, lower_title, ha='center',
+                    fontsize=15, transform=self.skewxaxis.transAxes)
 
         if imagename is not None:
             logger.info("saving figure")
