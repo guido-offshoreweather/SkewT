@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
+import logging
 from numpy import (interp, pi, cos, sin, arctan, sqrt,
                    linspace, min, exp, log, where)
 
-__version__ = "1.1.0"
+logger = logging.getLogger(__name__)
+__version__ = "1.2.0"
 __author__ = 'Thomas Chubb'
 __mail__ = 'thomas.chubb@monash.edu'
 
@@ -102,7 +104,7 @@ def Theta(tempk, pres, pref=100000.):
         minpres = pres
 
     if minpres < 2000:
-        print("WARNING: P<2000 Pa; did you input a value in hPa?")
+        logger.warning("P<2000 Pa; did you input a value in hPa?")
 
     return tempk * (pref/pres)**(Rs_da/Cp_da)
 
@@ -116,7 +118,7 @@ def TempK(theta, pres, pref=100000.):
         minpres = pres
 
     if minpres < 2000:
-        print("WARNING: P<2000 Pa; did you input a value in hPa?")
+        logger.warning("P<2000 Pa; did you input a value in hPa?")
 
     return theta * (pres/pref)**(Rs_da/Cp_da)
 
@@ -155,12 +157,12 @@ def ThetaE(tempk, pres, e):
     # Calculate the temp at the Lifting Condensation Level
     T_lcl = ((tempk-55)*2840 / (2840-(log(RH/100)*(tempk-55)))) + 55
 
-    # print "T_lcl :%.3f"%T_lcl
+    # logger.debug("T_lcl :%.3f"%T_lcl)
 
     # DEBUG STUFF ####
     theta_l = tempk * \
         (100000./(pres-e))**(Rs_da/Cp_da)*(tempk/T_lcl)**(0.28*qv)
-    # print "theta_L: %.3f"%theta_l
+    # logger.debug("theta_L: %.3f"%theta_l)
 
     # Calculate ThetaE
     theta_e = theta_l * exp((Lv * qv) / (Cp_da * T_lcl))
@@ -187,12 +189,12 @@ def ThetaE_Bolton(tempk, pres, e, pref=100000.):
     # Calculate TL (temp [K] at LCL):
     TL = 56 + ((Td-56.)**-1+(log(T/Td)/800.))**(-1)
 
-    # print "TL: %.3f"%TL
+    # logger.debug("TL: %.3f"%TL)
 
     # Calculate Theta_L:
     thetaL = T * (pref/(pres-e))**kappa_d*(T/TL)**(0.28*qv)
 
-    # print "theta_L: %.3f"%thetaL
+    # logger.debug("theta_L: %.3f"%thetaL)
 
     # put it all together to get ThetaE
     thetaE = thetaL * exp((3036./TL-0.78)*qv*(1+0.448*qv))
@@ -386,7 +388,7 @@ def VaporPressure(tempc, phase="liquid"):
 def SatVap(dwpt, phase="liquid"):
     """This function is deprecated, return ouput from VaporPres"""
 
-    print("WARNING: This function is deprecated, please use VaporPressure()" +
+    logger.warning(": This function is deprecated, please use VaporPressure()" +
           " instead, with dwpt as argument")
     return VaporPressure(dwpt, phase)
 

@@ -12,6 +12,9 @@ from numpy import (ma, array, linspace, logspace, log, cos, sin, pi, zeros,
 from datetime import datetime
 import os
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Local thermodynamics stuff, see thermodynamics.py
 try:
@@ -267,7 +270,7 @@ class Sounding(UserDict):
                 "%s %s" % (self["StationNumber"], self['SoundingDate']))
 
         if imagename is not None:
-            print("saving figure")
+            logger.info("saving figure")
             self.fig.savefig(imagename, dpi=dpi)
 
     def add_profile(self, **kwargs):
@@ -311,7 +314,7 @@ class Sounding(UserDict):
         try:
             dwpt = ma.masked_invalid(self.soundingdata['dwpt'])
         except KeyError:
-            print("Warning: No DWPT available")
+            logger.warning("No DWPT available")
             dwpt = ma.masked_array(zeros(pres.shape), mask=True)
 
         try:
@@ -321,7 +324,7 @@ class Sounding(UserDict):
             uu = ma.masked_invalid(sknt*cos(rdir))
             vv = ma.masked_invalid(sknt*sin(rdir))
         except KeyError:
-            print("Warning: No SKNT/DRCT available")
+            logger.warning("No SKNT/DRCT available")
             uu = ma.masked_array(zeros(pres.shape), mask=True)
             vv = ma.masked_array(zeros(pres.shape), mask=True)
 
@@ -521,7 +524,7 @@ class Sounding(UserDict):
             for ii in range(1, len(rhi)):
                 try:
                     # Debug only:
-                    # print fields[ii].lower(),
+                    # logger.debug(fields[ii].lower(),
                     # float(line[lhi[ii]:rhi[ii]].strip())
                     # Version < 0.1.4
                     # output[fields[ii].lower()\
@@ -575,7 +578,7 @@ class Sounding(UserDict):
         try:
             dwptc = self.soundingdata['dwpt']
         except KeyError:
-            print("Warning: No MIXR or DWPT for TPW calculation")
+            logger.warning("No MIXR or DWPT for TPW calculation")
             return -999.
         vprespa = VaporPressure(dwptc)
         mixrkg = MixRatio(vprespa, prespa)
@@ -674,7 +677,7 @@ class Sounding(UserDict):
 
         # This helps with debugging
         # for ii,eq in enumerate(eqlev):
-        # print "%5.2f  %5.2f  %2d"%(eq,tempeq[ii],stab[ii])
+        # logger.debug("%5.2f  %5.2f  %2d"%(eq,tempeq[ii],stab[ii]))
 
         # need environmental temperature at LCL
         tenv_lcl = interp(P_lcl, pparcel[::-1], tempenv[::-1])
@@ -727,7 +730,7 @@ class Sounding(UserDict):
         dwpt = self.soundingdata['dwpt'].copy().soften_mask()
         # raise ValueError
         if dwpt[(pres >= P_el).data*(pres < P_lfc).data].mask.any():
-            print("WARNING: substituting -200C for masked values of",
+            logger.warning("substituting -200C for masked values of",
                   "DWPT in this sounding")
         dwpt[dwpt.mask] = -200
         # dwptenv=interp(preswet,pres[::-1],dwpt[::-1])
@@ -775,12 +778,12 @@ class Sounding(UserDict):
             hghtenv[cond2])
 
         if False:
-            print("%3s  %7s  %7s  %7s  %7s  %7s  %7s  %7s  %7s" %
+            logger.info("%3s  %7s  %7s  %7s  %7s  %7s  %7s  %7s  %7s" %
                   ("IX", "PRES", "TPARCEL", "DPPARCE", "TENV",
                    "DPENV", "TV PARC", "TV ENV", "HEIGHT"))
             for ix, c2 in enumerate(cond2):
                 if c2:
-                    print(
+                    logger.info(
                         "%3d  %7.3f  %7.3f  %7.3f  %7.3f  %7.3f  %7.3f" +
                         "  %7.3f  %7.3f" % (ix, pparcel[ix], tparcel[ix],
                                             dpparcel[ix], tempenv[ix],
@@ -899,8 +902,9 @@ class Sounding(UserDict):
             "Plcl": P_lcl,
             "Tlcl": T_lcl}
 
-        print("\n---- Lifted Parcel Quantities ----")
-        print(dtext)
+        logger.info("---- Lifted Parcel Quantities ----")
+        for txt in dtext.split('\n'):
+            logger.info(txt)
 
         self.fig.text(0.825, 0.895, dtext, fontname="monospace",
                       va='top', backgroundcolor='white')
@@ -973,7 +977,7 @@ class Sounding(UserDict):
                 # sounding profile.
                 continue
             cape[ii] = thecape
-            # print "%7.2f  %7.2f  %7.2f  %7.2f"%
+            # logger.info("%7.2f  %7.2f  %7.2f  %7.2f"%)
             # (pres[ii],temp[ii],dwpt[ii],thecape)
 
         if cape.max() == 0.:
@@ -1029,10 +1033,10 @@ class Sounding(UserDict):
         # surface dew point temp
         dwpt_s = DewPoint(vpres_s)
 
-        # print "----- Mixed Layer Parcel Characteristics -----"
-        # print "Mixed layer depth                     : %5d mb "%depth
-        # print "Mean mixed layer potential temperature: %5.1f K"%thta_mix
-        # print "Mean mixed layer mixing ratio         : %5.2f g/kg"%
+        # logger.info("----- Mixed Layer Parcel Characteristics -----")
+        # logger.info("Mixed layer depth                     : %5d mb "%depth)
+        # logger.info("Mean mixed layer potential temperature: %5.1f K"%thta_mix)
+        # logger.info("Mean mixed layer mixing ratio         : %5.2f g/kg"%)
         # (mixr_mix*1e3)
 
         return pres0, temp_s, dwpt_s, 'ml'
