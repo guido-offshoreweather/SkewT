@@ -1102,8 +1102,9 @@ def solve_eq(preswet, func):
 
     # Sorry to be annoying but I'm going to force you to use
     # a monotonically increasing variable
-    assert (sign(diff(preswet)) == 1).all(), \
-        "Use a monotonically increasing abscissa"
+    #assert (sign(diff(preswet)) == 1).all(), \
+    #    "Use a monotonically increasing abscissa"
+    # guido commented out above line 07/09/2021
 
     # Identify changes in sign of function
     dsign = sign(func)
